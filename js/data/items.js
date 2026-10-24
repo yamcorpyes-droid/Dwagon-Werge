@@ -127,7 +127,7 @@ const CHAINS = [
   ]},
   { key: 'guardian', label: 'Guardian Statues', draw: 'guardian', color: '#e6e1d8', ring: '#8d877f', items: [
     { id: 'g_shard', name: 'Guardian Shard', desc: 'A broken bit of an old Guardian Statue, found in Adventures. Merge 3 for a Guardian Piece.' },
-    { id: 'g_piece', name: 'Guardian Piece', desc: 'Half of a Guardian Statue. Merge 3 to rebuild the Guardian and win the Adventure!' },
+    { id: 'g_piece', name: 'Guardian Piece', desc: 'A big piece of a Guardian Statue. Merge 3 to rebuild the Guardian and win the Adventure!' },
     { id: 'guardian', name: 'Guardian Statue', glow: true,
       desc: 'The Guardian of this land, whole again! Building it wins the Adventure (1 ⭐). Keep going for more Stars.' },
   ]},

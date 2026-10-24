@@ -4,7 +4,8 @@
    DWAGON AI
    Awake dwagons pick the nearest queued harvest job, fly there, work, spawn
    loot and fly home. Idle dwagons with energy also wander off on their own to
-   harvest things close to home. In camp, only as many dwagons as your nests
+   harvest things close to home (never what an Adventure's 'make' goal still
+   needs). In camp, only as many dwagons as your nests
    hold are awake. Each breed has an ability (see js/data/dwagons.js).
    ========================================================================== */
 function nestCapacity() {
@@ -98,7 +99,7 @@ function nearbyHarvest(home) {
   let best = -1, bd = Infinity;
   for (let i = 0; i < N; i++) {
     const it = items[i];
-    if (!it || !usable(i) || !ITEMS[it.type].harvest || it.charges <= 0) continue;
+    if (!it || !usable(i) || !ITEMS[it.type].harvest || it.charges <= 0 || bonusNeeds(ITEMS[it.type])) continue;
     const d = dist2(home, i);
     if (d > r2 || d >= bd || tripsTo(i) >= it.charges) continue;
     best = i; bd = d;

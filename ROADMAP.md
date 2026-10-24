@@ -131,6 +131,13 @@ What was built:
 - Camp mist now needs more Stars (2 / 5 / 9 / 15 / 24), since each Adventure gives up to 3. Dwagon Power still works as before.
 - Old saves: every Adventure already finished counts as 3 Stars, a run in progress gets its Guardian pieces hidden in it, and the wallet starts with 5 Chalices.
 
+### Stage 4 tune-up ✅ done
+- **All 30 Adventures play-tested by a simulation:** a headless Node script loads the real engine files and a greedy bot plays every level (8 random seeds each, never spending Moonstones). Every level is winnable with all 3 Stars, and every bonus goal is reachable in every seed.
+- **Difficulty curve:** World 1 is unchanged except Stone Steps (more rocks, 25 bricks). From World 2 on, maps grow (up to 20×20 for Heart of the Gloom), fewer levels start with a Life Tree, the free Life Essence / Elder Pines hidden in later levels are trimmed, and the Guardian is hidden further out in Worlds 3–5 (new optional `guardianAt` level setting).
+- **Bonus goals fixed:** idle dwagons used to auto-harvest the mushrooms, grass and rocks a "make" goal needed (e.g. Fairy Ring, Shroom Clump, Monolith). They now leave those alone until the goal is done. Brick and coin goals were lowered and/or given more rocks and mushrooms so they can always be reached.
+- **Save safety:** a saved Adventure run whose map has since changed size is dropped (its Chalice is refunded) instead of breaking the load, which could otherwise have fallen back to a new game.
+- Goal text reads properly ("Make an Elder Pine", "Make 2× Shroom Clump"); a Guardian Piece is no longer called "half" a statue.
+
 ## (original Stage 4 plan, for reference)
 1. **World map:** levels arranged as worlds along a path, replacing the Adventures list.
 2. **Guardian Statues:** our version of the original's level statues. Each level hides statue pieces in its dead land, and merging the pieces into the full statue wins the level. Other goals remain as bonus objectives.

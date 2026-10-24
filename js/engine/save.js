@@ -131,7 +131,17 @@ function restore(d) {
     Sound.muted = !!d.muted;
     won = !!d.won;
     worlds = {}; world = null; particles = [];
-    for (const k in d.worlds) if (WORLDS[k] && k !== TEST_KEY) worlds[k] = unpackWorld(k, d.worlds[k]);
+    for (const k in d.worlds) {
+      if (!WORLDS[k] || k === TEST_KEY) continue;
+      // an Adventure whose map has changed size since this run was saved can't be continued:
+      // drop the run and give its Chalice back
+      const def = WORLDS[k];
+      if (def.level && d.worlds[k].tiles.length !== def.land.length * def.land[0].length) {
+        if (!def.custom) pendingRewards.push('chalice');
+        continue;
+      }
+      worlds[k] = unpackWorld(k, d.worlds[k]);
+    }
     if (!d.levelStars) upgradeLevelRuns();
     // a welcome gift for camps that just grew: the new Coin Jar the starting camp now has
     if (worlds.camp && worlds.camp.grew) pendingRewards.push('coinjar');

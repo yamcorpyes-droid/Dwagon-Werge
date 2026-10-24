@@ -104,7 +104,7 @@ function makeLevel(o) {
   const take = (list) => { const t = list.find(t => !used.has(t.r * o.cols + t.c)); used.add(t.r * o.cols + t.c); return t; };
   for (const type of o.start) { const t = take(live); items.push([t.r, t.c, type]); }
   // the Guardian is hidden well away from the start; totems go furthest of all
-  const away = dead.filter(t => t.d >= o.live + 1.5);
+  const away = dead.filter(t => t.d >= (o.guardianAt || o.live + 1.5));
   for (const type of o.guardian || []) { const t = take(away.length > 8 ? away : dead); items.push([t.r, t.c, type]); }
   const far = [...dead].sort((a, b) => b.d - a.d || a.k - b.k);
   for (const type of o.hidden) { const t = take(type === 'gloomtotem' ? far : dead); items.push([t.r, t.c, type]); }

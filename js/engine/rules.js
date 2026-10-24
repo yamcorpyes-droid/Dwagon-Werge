@@ -369,18 +369,27 @@ function flushRewards() {
 
 /* ---- Adventures: the Guardian, Stars and Chalices ---- */
 
+/** "Make an Elder Pine", "Make 2× Shroom Clump" */
+function makeText(g) {
+  const name = ITEMS[g.item].name;
+  return `Make ${g.n > 1 ? `${g.n}×` : /^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`;
+}
 function goalProgress(g) {
   switch (g.type) {
     case 'heal':    return { text: 'Heal all the dead land', v: world.totalDead - deadCount(), n: world.totalDead };
-    case 'make':    return { text: `Make ${g.n > 1 ? g.n : 'a'} ${ITEMS[g.item].name}`, v: world.made[g.item] || 0, n: g.n };
+    case 'make':    return { text: makeText(g), v: world.made[g.item] || 0, n: g.n };
     case 'banish':  return { text: `Banish ${g.n} Gloomlings`, v: world.banished, n: g.n };
     case 'collect': return { text: `Collect ${g.n} ${g.what === 'moon' ? '🌙 Moonstones' : g.what}`, v: world.collected[g.what] || 0, n: g.n };
   }
 }
 function goalText(g) {
-  return g.type === 'heal' ? 'Heal all the land' : g.type === 'make' ? `Make ${g.n > 1 ? g.n : 'a'} ${ITEMS[g.item].name}` :
+  return g.type === 'heal' ? 'Heal all the land' : g.type === 'make' ? makeText(g) :
     g.type === 'banish' ? `Banish ${g.n} Gloomlings` : `Collect ${g.n} ${g.what === 'moon' ? '🌙' : g.what}`;
 }
+
+/** Is this item a building block for an unfinished 'make' goal here? (Idle dwagons leave those alone.) */
+const bonusNeeds = (def) => !!world.def.level && world.def.bonus.some(g => g.type === 'make' &&
+  ITEMS[g.item].chain === def.chain && ITEMS[g.item].tier > def.tier && (world.made[g.item] || 0) < g.n);
 
 const guardianBuilt = () => (world.made.guardian || 0) > 0;
 const bonusDone = () => world.def.bonus.every(g => { const p = goalProgress(g); return p.v >= p.n; });
