@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dwagon Merge</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#5aa84f">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<!--
+  ============================================================================
+  DWAGON MERGE: a free, offline merge-puzzle game. Made as a gift.
+  No real money and nothing to buy. Gentle timers keep it interesting, and
+  every one can be skipped with Moonstones, which are only ever EARNED by
+  playing. Set CONFIG.TIMERS_ON = false to switch all waiting off.
+
+  FEATURES
+    Home Camp ........ 24x24 world: pan (drag ground), zoom (wheel/pinch/buttons)
+    Merging .......... 3 -> 1, 5 -> 2 bonus; Rainbow Prism wildcards join any merge
+    Dead Land ........ two strengths, hidden treasures, healed by Life Essence orbs
+    Mist ............. camp regions that clear when you've earned enough Stars
+    World Map ........ 30 Adventures in 5 worlds; rebuild the Guardian Statue to win,
+                       up to 3 Stars each; starting one uses an earned Chalice
+    Level editor ..... hidden: tap the title 5 times; saves to "My Levels"
+    Dwagons .......... hatch from eggs, fly out to harvest; need Nests in camp
+    Gloomlings ....... wander dead land and resist healing; Gloom Totems summon more
+    Limits ........... baskets & plants regrow, dwagons have energy, bubbles float
+                       away, big chests need keys; Moonstones 🌙 skip any of it
+    Chests, Coins, Bricks, Grass, Mushrooms, Stones, Treats, Keys, Geodes
+    Market ........... earned coins/bricks only
+    Storage .......... tuck camp items away for later
+    Quests, Collection book, Hints, Sound, auto-save
+
+  HOW THE FILES ARE ORGANISED
+    css/style.css ........ page styling
+    js/config.js ......... tuning numbers (timers, costs, chances, win message)
+    js/data/ ............. PLAIN DATA: edit these to add content
+      items.js ........... every item chain
+      dwagons.js ......... dwagon breeds, levels, abilities, Dwagon Power
+      worlds.js .......... the Home Camp map, mist and starting items
+      levels.js .......... Adventure levels
+      quests.js .......... quests and Market prices
+    js/engine/ ........... the rules
+      catalog.js ......... turns the data tables into ITEMS / LEVELS / WORLDS
+      state.js ........... game state and switching between worlds
+      rules.js ........... merging, chests, selling, storage, quests
+      healing.js ......... healing dead land and clearing mist
+      timers.js .......... regrowing charges, dwagon energy, Moonstones, treats
+      dwagons.js ......... dwagon AI    enemies.js ... Gloomlings & totems
+      input.js ........... camera, mouse and touch
+      sound.js ........... tiny synth   save.js ...... save, load, backups
+    js/render/draw.js .... all canvas drawing
+    js/ui/panels.js ...... side panels and pop-up windows
+    js/ui/map.js ......... the World Map     editor.js ... the hidden level editor
+    js/main.js ........... starts the game
+  ============================================================================
+-->
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>🐉 Dwagon Merge</h1>
+    <div class="wallet">
+      <span class="chip" title="Stars: up to 3 for each Adventure on the World Map">⭐ <span id="stars">0</span></span>
+      <span class="chip" title="Chalices: starting an Adventure uses one. Earned in the game, never bought.">🏆 <span id="chalices">0</span></span>
+      <span class="chip" title="Moonstones: earned in the game (never bought). Use them to skip waits.">🌙 <span id="moon">0</span></span>
+      <span class="chip" title="Coins (earned by playing)"><span class="coin-ico"></span><span id="coins">0</span></span>
+      <span class="chip" title="Bricks (earned by harvesting stones)">🧱 <span id="bricks">0</span></span>
+      <span class="chip" title="Dwagon Power: the strength of the dwagons in your camp. It clears mist and grows your storage.">🐲 <span id="might">0</span></span>
+    </div>
+  </header>
+  <div id="progressRow">
+    <span class="chip" id="worldName"></span>
+    <span>Land healed <b id="healed">0</b> / <span id="totalDead">0</span></span>
+    <div id="progress"><div></div></div>
+  </div>
+
+  <main>
+    <div id="stage">
+      <canvas id="board"></canvas>
+      <div id="quickBar" hidden></div>
+      <div class="zoom">
+        <button id="zoomIn" title="Zoom in">+</button>
+        <button id="zoomOut" title="Zoom out">−</button>
+        <button id="zoomHome" title="Back to the start">⌂</button>
+      </div>
+    </div>
+    <aside>
+      <section class="card" id="info"></section>
+      <section class="card" id="goalsCard" hidden>
+        <h3>Adventure <small id="goalsName"></small></h3>
+        <ol class="qlist starList" id="goalList"></ol>
+        <div class="actions"><button id="finishBtn" class="primary" hidden>🏆 Finish</button> <button id="leaveLevelBtn">🏕 Back to camp</button></div>
+      </section>
+      <section class="card">
+        <h3>Quests <small id="questCount"></small></h3>
+        <ol class="qlist" id="questList"></ol>
+        <div id="pendingNote"></div>
+      </section>
+      <div class="controls">
+        <button id="advBtn">🗺 World Map</button>
+        <button id="marketBtn">🛒 Market</button>
+        <button id="storageBtn">📦 Storage</button>
+        <button id="dwBookBtn">🐲 Dwagon Book</button>
+        <button id="bookBtn">📖 Collection</button>
+        <button id="hintBtn">💡 Hint</button>
+        <button id="helpBtn">❓ How to play</button>
+        <button id="soundBtn">🔊 Sound on</button>
+        <button id="resetBtn">↺ New game</button>
+        <button id="installBtn" class="primary" hidden>📲 Install app</button>
+        <button id="exportBtn" title="Download your progress as a file">💾 Back up</button>
+        <button id="importBtn" title="Load progress from a backup file">📂 Restore</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<div class="overlay" id="helpOverlay">
+  <div class="panel">
+    <h2>🐉 How to play</h2>
+    <ul>
+      <li><b>Drag</b> items around green land. Drag empty ground to <b>move the map</b>; pinch, mouse wheel or +/− to <b>zoom</b>.</li>
+      <li>On a tablet, <b>double-tap</b> or <b>press and hold</b> an item to use it (that's "double-click" below). Tapping an item also shows its buttons at the top of the map.</li>
+      <li>Put <b>3 matching</b> items next to each other (up/down/left/right) to merge them. Merge <b>5</b> at once and you get <b>2</b>! Sometimes a <b>Bonus Bubble</b> appears too: pop it with 🌙 within a minute, or it floats off and leaves a coin.</li>
+      <li>A 🌈 <b>Rainbow Prism</b> counts as any item in a merge.</li>
+      <li><b>Double-click</b> the 🧺 Seed Basket for Life Sprouts. It holds 10 and regrows one every couple of minutes, even while the game is closed. Merge 3 baskets for a bigger, faster one.</li>
+      <li>Flowers and trees regrow their charges over time too, and <b>dwagons</b> spend ⚡ energy on each harvest and rest in nests to recover. A 🍓 <b>treat</b> perks them right up.</li>
+      <li>🌙 <b>Moonstones</b> skip any wait: refill a basket or plant, wake a dwagon, pop a bubble or pick a lock. You only ever <b>earn</b> them, from quests, Adventures, 5-merges and Moonstone Geodes.</li>
+      <li>Golden Chests and Dwagon Hoards are locked: a 🔑 <b>Chest Key</b> on the board opens them.</li>
+      <li><b>Double-click</b> flowers and trees to make ✨ Life Essence. <b>Click</b> an orb to heal the dead land <b>closest to it</b>.</li>
+      <li>Merge 3 eggs to hatch a <b>dwagon</b>. There are 6 breeds (Meadow, Stone, Tide, Ember, Bloom and Star), each with its own special ability and 8 levels. Merging three level-4 dwagons makes a <b>Cradle</b>: tap it to hatch a level 5.</li>
+      <li><b>Double-click</b> rocks, 🍄 mushrooms or 🌿 grass and a dwagon flies over to harvest them. Idle dwagons also harvest things right next to them by themselves. In camp, dwagons need <b>Nests</b> to sleep in, or they nap instead of working.</li>
+      <li>🐲 <b>Dwagon Power</b> is the strength of the dwagons in your camp. It clears mist (Stars do too) and gives you more storage. See it all in the 🐲 Dwagon Book.</li>
+      <li><b>Gloomlings</b> roam the dead land and make it harder to heal. Heal the tile they stand on to banish them. Heal a 🗿 <b>Gloom Totem</b> to stop it summoning more.</li>
+      <li>The 🗺 <b>World Map</b> has 30 Adventures in 5 worlds. Each hides a broken 🗿 <b>Guardian Statue</b> under its dead land: heal your way to the pieces and merge them to win. That's ⭐ 1 Star; the bonus goals and healing all the land give ⭐ 2 more. Stars clear the <b>mist</b> around your camp.</li>
+      <li>Starting an Adventure uses a 🏆 <b>Chalice</b> (coming back to one you left is free). You win Chalices back by finishing Adventures, from quests, Goal Stars and Wonders, or buy one in the Market with coins. Never with money.</li>
+      <li><b>Click</b> coins, bricks, bubbles and chests to collect or open them. Spend what you earn in the 🛒 Market. Keep spare camp items in 📦 Storage.</li>
+      <li>✨ <b>Wonders</b> sit at the top of some merge chains (World Tree, Everbloom Garden, Toadstool Palace, Sunstone Circle, Dwagon Roost, Moon Altar). They add lots of Dwagon Power and make useful things.</li>
+      <li>Some mist has a <b>cloud key</b>: it shows an item, and dropping that item on the mist clears it.</li>
+      <li>You can only hold so many coins. 🏺 <b>Coin Jars</b> (merge them into Coffers and Vaults) hold more.</li>
+      <li>Every finished quest also gives a ⭐ <b>Goal Star</b>: tap it 5 times for 5 prizes. In Adventures, 🌠 <b>Moon Stars</b> fall now and then; collect them, merge them, or leave them to fly home when you finish.</li>
+      <li>Heal every tile of your camp to win.</li>
+    </ul>
+    <p>No real money, ever. Everything is earned by playing. 💚</p>
+    <button class="primary" data-close>Let's play</button>
+  </div>
+</div>
+
+<div class="overlay" id="advOverlay">
+  <div class="panel wide">
+    <h2>🗺 World Map <small class="muted" id="advStars"></small></h2>
+    <p class="muted" style="margin-top:-8px">Each Adventure hides a broken 🗿 Guardian Statue under its dead land. Heal your way to the pieces and merge them to win. Starting an Adventure uses a 🏆 Chalice; leaving and coming back later is free.</p>
+    <div class="mapTop"><button id="mapHomeBtn"></button></div>
+    <div class="worldTabs" id="worldTabs"></div>
+    <div class="worldMap" id="worldMap"></div>
+    <div class="card levelCard" id="levelCard"></div>
+    <p><button class="primary" data-close>Close</button></p>
+  </div>
+</div>
+
+<div class="overlay" id="editorOverlay">
+  <div class="panel wide">
+    <h2>🛠 Level editor</h2>
+    <p class="muted" style="margin-top:-8px">Draw land, place items and Gloomlings, then test it or save it to <b>My Levels</b> on the World Map. The level data below can be copied into <code>js/data/levels.js</code>.</p>
+    <div class="edRow">
+      <label>Name <input id="edName" maxlength="30"></label>
+      <label>Size <input id="edCols" type="number" min="5" max="24"> × <input id="edRows" type="number" min="5" max="24"></label>
+      <button id="edResize">Resize</button>
+      <label>Start from <select id="edLoad"></select></label>
+    </div>
+    <div class="edRow" id="edTools"></div>
+    <div class="edRow"><label>Item <select id="edItem"></select></label> <span class="muted" id="edCheck"></span></div>
+    <div class="edCanvasWrap"><canvas id="edCanvas"></canvas></div>
+    <details>
+      <summary>Level data</summary>
+      <textarea id="edData" rows="8" spellcheck="false"></textarea>
+      <p><button id="edApply">Use this data</button> <button id="edCopy">📋 Copy</button></p>
+    </details>
+    <p class="edRow"><button class="primary" id="edTest">▶ Test play</button> <button id="edSave">💾 Save to My Levels</button> <button id="edDelete">🗑 Delete from My Levels</button> <button data-close>Close</button></p>
+  </div>
+</div>
+
+<div class="overlay" id="marketOverlay">
+  <div class="panel">
+    <h2>🛒 Market</h2>
+    <p class="muted" style="margin-top:-8px">Paid with coins and bricks you've earned in the game. Never real money.</p>
+    <div id="marketList"></div>
+    <p><button class="primary" data-close>Close</button></p>
+  </div>
+</div>
+
+<div class="overlay" id="storageOverlay">
+  <div class="panel">
+    <h2>📦 Storage <small class="muted" id="storageCount"></small></h2>
+    <p class="muted" style="margin-top:-8px">Select an item in camp and press <b>Store</b> to tuck it away. Take it out any time.</p>
+    <div class="storageGrid" id="storageList"></div>
+    <p><button class="primary" data-close>Close</button></p>
+  </div>
+</div>
+
+<div class="overlay" id="dwBookOverlay">
+  <div class="panel">
+    <h2>🐲 Dwagon Book <small class="muted" id="dwBookCount"></small></h2>
+    <p class="muted" style="margin-top:-8px">Merge 3 eggs to hatch a dwagon, and 3 dwagons for the next level. Three level-4 dwagons make a <b>Cradle</b>: tap it to hatch a level-5. Tap a dwagon you own to find it on the map.</p>
+    <div id="dwUnlocks" class="card"></div>
+    <div id="dwBookList"></div>
+    <p><button class="primary" data-close>Close</button></p>
+  </div>
+</div>
+
+<div class="overlay" id="bookOverlay">
+  <div class="panel">
+    <h2>📖 Collection <small class="muted" id="bookCount"></small></h2>
+    <div id="bookList"></div>
+    <p><button class="primary" data-close>Close</button></p>
+  </div>
+</div>
+
+<div class="overlay" id="levelOverlay">
+  <div class="panel" style="text-align:center">
+    <h2 id="levelTitle"></h2>
+    <p id="levelMessage"></p>
+    <p><button class="primary" id="finishLevelBtn">🏆 Finish and collect</button> <button id="levelStayBtn">Keep playing</button></p>
+  </div>
+</div>
+
+<div class="overlay" id="winOverlay">
+  <div class="panel" style="text-align:center">
+    <h2>🐉 The land is whole again 🐉</h2>
+    <p id="winMessage"></p>
+    <button class="primary" data-close>Keep playing</button>
+  </div>
+</div>
+
+<!-- Plain scripts (not modules) so the game opens straight from the folder. Order matters. -->
+<script src="js/config.js"></script>
+<script src="js/data/items.js"></script>
+<script src="js/data/dwagons.js"></script>
+<script src="js/data/worlds.js"></script>
+<script src="js/data/levels.js"></script>
+<script src="js/data/quests.js"></script>
+<script src="js/engine/catalog.js"></script>
+<script src="js/engine/state.js"></script>
+<script src="js/engine/rules.js"></script>
+<script src="js/engine/healing.js"></script>
+<script src="js/engine/timers.js"></script>
+<script src="js/engine/dwagons.js"></script>
+<script src="js/engine/enemies.js"></script>
+<script src="js/engine/input.js"></script>
+<script src="js/render/draw.js"></script>
+<script src="js/ui/panels.js"></script>
+<script src="js/ui/map.js"></script>
+<script src="js/ui/editor.js"></script>
+<script src="js/engine/sound.js"></script>
+<script src="js/engine/save.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

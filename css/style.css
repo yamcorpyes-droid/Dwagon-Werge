@@ -1,0 +1,194 @@
+:root {
+  --bg1: #fdf6ec;
+  --bg2: #e6f4e1;
+  --ink: #3b3a36;
+  --muted: #7a776d;
+  --card: #ffffffe0;
+  --accent: #5aa84f;
+  --accent-ink: #ffffff;
+  --gold: #e0a020;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(160deg, var(--bg1), var(--bg2));
+  /* keep clear of tablet camera notches and rounded corners */
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+           max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  touch-action: manipulation;          /* no accidental double-tap page zoom */
+  -webkit-tap-highlight-color: transparent;
+}
+#app { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+h1 { margin: 0; font-size: 1.6rem; letter-spacing: .3px; }
+.wallet { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  background: var(--card); border-radius: 99px; padding: 4px 12px; font-weight: 600;
+  box-shadow: 0 1px 3px #0002; display: inline-flex; align-items: center; gap: 6px;
+}
+.coin-ico {
+  width: 14px; height: 14px; border-radius: 50%; display: inline-block;
+  background: radial-gradient(circle at 35% 35%, #fff3b0, #f5c542 55%, #b88a1a);
+  box-shadow: inset 0 0 0 1.5px #b88a1a;
+}
+#progressRow { display: flex; align-items: center; gap: 10px; font-size: .95rem; color: var(--muted); flex-wrap: wrap; }
+#progressRow b { color: var(--ink); }
+#progress { flex: 1; min-width: 120px; height: 10px; border-radius: 99px; background: #00000014; overflow: hidden; }
+#progress > div { height: 100%; width: 0; background: linear-gradient(90deg, #8fd16a, #4fb36b); transition: width .4s; }
+
+main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; align-items: start; }
+@media (max-width: 860px) { main { grid-template-columns: minmax(0, 1fr); } }
+
+#stage {
+  position: relative; height: min(76vh, 720px); min-height: 320px;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 10px 30px #3b3a3626, 0 2px 6px #3b3a3620;
+  background: #231e29;
+}
+@media (max-width: 860px) { #stage { height: min(70vh, calc(100vw - 32px)); } }
+canvas#board {
+  width: 100%; height: 100%; display: block;
+  touch-action: none; cursor: grab;
+  user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none;         /* no copy/save menu on press-and-hold */
+}
+.zoom { position: absolute; right: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+.zoom button { width: 38px; height: 38px; padding: 0; font-size: 1.2rem; font-weight: 700; }
+
+/* the selected item's buttons, floating over the top of the map */
+#quickBar {
+  position: absolute; left: 10px; top: 10px; right: 58px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: #fffdf8ee; border-radius: 14px; padding: 6px 10px;
+  box-shadow: 0 4px 14px #0003; pointer-events: auto;
+}
+#quickBar[hidden] { display: none; }
+#quickBar .qname { font-weight: 700; font-size: .95rem; margin-right: auto; display: flex; align-items: center; gap: 6px; }
+#quickBar .qname small { font-weight: 400; color: var(--muted); }
+#quickBar button { padding: 6px 12px; }
+
+aside { display: flex; flex-direction: column; gap: 10px; }
+.card { background: var(--card); border-radius: 14px; padding: 12px 14px; box-shadow: 0 1px 3px #0001; }
+.card h3 { margin: 0 0 8px; font-size: 1rem; display: flex; justify-content: space-between; gap: 8px; }
+.card h3 small { font-weight: 400; color: var(--muted); }
+#info { min-height: 110px; line-height: 1.4; font-size: .95rem; }
+#info .head { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+#info .name { font-weight: 700; }
+.muted { color: var(--muted); }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.qlist { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.qlist li { font-size: .92rem; }
+.qbar { height: 6px; border-radius: 99px; background: #00000012; overflow: hidden; margin-top: 3px; }
+.qbar > div { height: 100%; background: var(--gold); }
+.qlist li.done { color: var(--accent); }
+#pendingNote { margin-top: 8px; font-size: .85rem; color: #a0670a; }
+#goalsCard { border: 2px solid #f0c95a; }
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+button {
+  font: inherit; border: 0; border-radius: 10px; padding: 8px 12px; cursor: pointer;
+  background: var(--card); color: var(--ink); box-shadow: 0 1px 3px #0002;
+}
+@media (hover: hover) { button:hover { filter: brightness(0.97); } }
+button:active { filter: brightness(0.92); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.primary { background: var(--accent); color: var(--accent-ink); }
+button { user-select: none; -webkit-user-select: none; }
+
+/* touch screens (tablets, phones): bigger, easier-to-hit buttons */
+@media (pointer: coarse) {
+  button { padding: 11px 14px; min-height: 44px; }
+  .zoom button { width: 48px; height: 48px; font-size: 1.4rem; }
+  #quickBar button { padding: 9px 14px; min-height: 42px; }
+  .controls { gap: 8px; }
+  .storageGrid button { padding: 8px 10px; font-size: .85rem; }
+}
+
+#toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+  background: #3b3a36ee; color: #fff; padding: 10px 16px; border-radius: 10px;
+  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+  max-width: calc(100vw - 32px); text-align: center; z-index: 20;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.overlay {
+  position: fixed; inset: 0; background: #2a2a2a88; display: none;
+  align-items: center; justify-content: center; padding: 16px; z-index: 10;
+}
+.overlay.show { display: flex; }
+.panel {
+  background: #fffdf8; border-radius: 16px; padding: 20px 22px; max-width: 540px; width: 100%;
+  max-height: calc(100vh - 32px); overflow: auto;
+  box-shadow: 0 20px 50px #0004; line-height: 1.5;
+}
+.panel h2 { margin-top: 0; }
+.panel ul { padding-left: 1.2em; }
+.panel li { margin-bottom: 4px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #0000000d; }
+.row .grow { flex: 1; min-width: 0; }
+.row .btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.chainRow { margin-bottom: 12px; }
+.chainRow h4 { margin: 0 0 4px; font-size: .9rem; color: var(--muted); }
+.chainRow h4 .muted { font-weight: 400; }
+#dwUnlocks { margin-bottom: 14px; font-size: .9rem; display: flex; flex-direction: column; gap: 4px; background: #f6f1e4; }
+#dwUnlocks h4 { margin: 0 0 4px; }
+#dwUnlocks .done { color: var(--accent); }
+.chainItems { display: flex; flex-wrap: wrap; gap: 6px; }
+.chainItems figure { margin: 0; width: 72px; text-align: center; font-size: .72rem; line-height: 1.2; }
+.storageGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.storageGrid > div { background: #00000008; border-radius: 10px; padding: 6px; text-align: center; font-size: .75rem; }
+.storageGrid button { margin-top: 4px; padding: 4px 8px; font-size: .75rem; }
+
+/* ---- Adventure card: one row per Star ---- */
+.starList { list-style: none; padding-left: 0; }
+.starList li > div { margin: 4px 0 0 1.6em; font-size: .9em; }
+.starList .star { display: inline-block; width: 1.4em; }
+.starList .done { color: var(--accent); }
+
+/* ---- World Map ---- */
+.panel.wide { max-width: 760px; }
+.mapTop { margin-bottom: 8px; }
+.worldTabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; }
+.worldTab {
+  flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  min-width: 96px; padding: 6px 8px; border-radius: 12px; border: 2px solid transparent;
+  background: color-mix(in srgb, var(--wc) 22%, #fff); line-height: 1.15;
+}
+.worldTab .we { font-size: 1.4rem; }
+.worldTab .wn { font-weight: 600; font-size: .82rem; }
+.worldTab small { color: var(--muted); }
+.worldTab.on { border-color: var(--wc); background: color-mix(in srgb, var(--wc) 40%, #fff); }
+.worldMap {
+  position: relative; margin: 6px 0 10px; border-radius: 16px; overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, #ffffff88, transparent 60%),
+              linear-gradient(160deg, color-mix(in srgb, var(--wc) 35%, #fff), color-mix(in srgb, var(--wc) 65%, #fff));
+}
+.worldMap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.worldMap path { fill: none; stroke: #fffbe8; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 2 16; vector-effect: non-scaling-stroke; opacity: .9; }
+.worldMap .decor { position: absolute; font-size: 1.6rem; opacity: .55; transform: translate(-50%, -50%); pointer-events: none; }
+.levelNode {
+  position: absolute; transform: translate(-50%, -50%); width: clamp(46px, 15vw, 66px); height: clamp(46px, 15vw, 66px); border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  background: #fffdf5; border: 3px solid var(--gold); box-shadow: 0 3px 8px #0003; padding: 0;
+}
+.levelNode .num { font-weight: 700; font-size: 1.15rem; line-height: 1.1; }
+.levelNode .st { font-size: .6rem; letter-spacing: -1px; }
+.levelNode.done { background: #fff4c9; }
+.levelNode.locked { background: #e7e3da; border-color: #b9b4ad; opacity: .8; }
+.levelNode.going { border-color: var(--accent); }
+.levelNode.sel { outline: 4px solid #ffffffcc; transform: translate(-50%, -50%) scale(1.12); }
+.levelNode.here::after { content: '📍'; position: absolute; top: -18px; font-size: 1.1rem; }
+.levelCard h3 { margin: 0 0 2px; }
+.levelCard .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ---- Level editor ---- */
+.edRow { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 6px 0; }
+.edRow input[type=number] { width: 4em; }
+#edTools button.quickPick { min-width: 40px; font-size: 1.1rem; }
+.edCanvasWrap { overflow: auto; max-height: 60vh; margin: 8px 0; border-radius: 8px; background: #2f2836; }
+#edCanvas { display: block; touch-action: none; cursor: crosshair; }
+#edData { width: 100%; font-family: Consolas, monospace; font-size: .8rem; }
