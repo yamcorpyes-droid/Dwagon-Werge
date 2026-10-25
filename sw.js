@@ -6,7 +6,7 @@
 
    When you add or rename a file, add it to FILES and bump CACHE.
    ========================================================================== */
-const CACHE = 'dwagon-merge-v5';
+const CACHE = 'dwagon-merge-v6';
 const FILES = [
   './',
   'index.html',
