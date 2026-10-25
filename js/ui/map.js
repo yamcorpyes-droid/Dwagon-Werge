@@ -11,6 +11,13 @@ const MAP_DECOR = [
   ['🐚', '🌊', '🦀', '⛵', '🐚'],
   ['⛰', '🪨', '🦅', '⛰', '🌲'],
   ['🌑', '🕸', '🦇', '🥀', '🌫'],
+  ['🌸', '🐝', '🍎', '🌷', '🦋'],
+  ['❄', '🌲', '⛄', '🏔', '🦌'],
+  ['🌋', '🔥', '🌑', '♨', '🦎'],
+  ['🏜', '🌵', '🏛', '🐚', '🦂'],
+  ['💎', '🔮', '🦇', '💠', '🕯'],
+  ['🕸', '🕯', '🦉', '🍄', '🌫'],
+  ['🌠', '☁', '🌙', '✨', '🌈'],
 ];
 const CUSTOM_WORLD = { name: 'My Levels', emoji: '🛠', color: '#b0a48a' };
 
@@ -61,6 +68,9 @@ function renderWorldTabs() {
     b.onclick = () => { mapWorld = w.n; mapLevel = null; renderMap(); };
     tabs.appendChild(b);
   }
+  // with 12 worlds the tabs scroll sideways: keep the one on show in view
+  const on = tabs.querySelector('.on');
+  if (on) tabs.scrollLeft = on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2;
 }
 
 function renderPath() {

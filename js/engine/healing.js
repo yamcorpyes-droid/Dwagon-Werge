@@ -4,8 +4,11 @@
    7. HEALING & MIST
    ========================================================================== */
 const enemyAt = (i) => enemies.some(e => e.i === i);
-const tileNeed = (i) => tiles[i].cost + (enemyAt(i) ? CONFIG.GLOOM_EXTRA : 0);
-const needOf = (i) => tiles[i].dead && !tiles[i].mist ? tileNeed(i) - tiles[i].heal - reserved[i] : 0;
+const enemyOn = (i) => enemies.find(e => e.i === i);
+/** Extra healing a tile needs while this enemy stands on it (a Gloom Lord's tile can't be healed at all). */
+const gloomExtra = (e) => !e || e.kind === 'lord' ? 0 : e.kind === 'brute' ? CONFIG.BRUTE_EXTRA : CONFIG.GLOOM_EXTRA;
+const tileNeed = (i) => tiles[i].cost + gloomExtra(enemyOn(i));
+const needOf = (i) => tiles[i].dead && !tiles[i].mist && !lordAt(i) ? tileNeed(i) - tiles[i].heal - reserved[i] : 0;
 
 function activateEssence(idx) {
   const power = ITEMS[items[idx].type].heal;
@@ -37,7 +40,7 @@ function applyHeal(i) {
   reserved[i] = Math.max(0, reserved[i] - 1);
   if (!tiles[i].dead) return;
   tiles[i].heal++;
-  if (tiles[i].heal >= tileNeed(i)) revive(i);
+  if (tiles[i].heal >= tileNeed(i) && !lordAt(i)) revive(i);
 }
 
 let lastBloomSound = 0;

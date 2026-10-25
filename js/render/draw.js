@@ -56,7 +56,7 @@ function drawTile(g, i) {
     g.fillStyle = `rgba(140, 220, 120, ${0.12 + 0.35 * tile.heal / need})`;
     g.fillRect(x, y, TILE, TILE);
   }
-  // healing pips: green = healed, purple = extra needed because of a Gloomling
+  // healing pips: green = healed, purple = extra needed because of a Gloomling or Brute
   for (let k = 0; k < need; k++) {
     g.fillStyle = k < tile.heal ? '#b9f59a' : k >= tile.cost ? '#9b6fd0aa' : '#00000045';
     g.beginPath(); g.arc(x + TILE - 8 - k * 8, y + 8, 2.8, 0, Math.PI * 2); g.fill();
@@ -127,9 +127,10 @@ function drawRock(g, def, x, y, s) {
     return;
   }
   drawShadow(g, x, y + 2 * s, size);
+  const [light, dark, edge] = def.rockColors || ['#d6d1ca', '#8d877f', '#6d6861'];   // cinders are dark
   const grad = g.createLinearGradient(x, y - size, x, y + size);
-  grad.addColorStop(0, '#d6d1ca'); grad.addColorStop(1, '#8d877f');
-  g.fillStyle = grad; g.strokeStyle = '#6d6861'; g.lineWidth = 2 * s;
+  grad.addColorStop(0, light); grad.addColorStop(1, dark);
+  g.fillStyle = grad; g.strokeStyle = edge; g.lineWidth = 2 * s;
   if (def.id === 'monolith') {
     roundRect(g, x - size * 0.5, y - size * 1.25, size, size * 2.1, 6 * s);
     g.fill(); g.stroke();
@@ -151,6 +152,11 @@ function drawRock(g, def, x, y, s) {
   g.closePath(); g.fill(); g.stroke();
   g.fillStyle = '#ffffff55';
   g.beginPath(); g.ellipse(x - size * 0.3, y - size * 0.35, size * 0.3, size * 0.15, -0.4, 0, Math.PI * 2); g.fill();
+  if (def.ember) {
+    // glowing cracks
+    g.strokeStyle = '#ff8a3d'; g.lineWidth = 2 * s;
+    g.beginPath(); g.moveTo(x - size * 0.5, y + size * 0.1); g.lineTo(x - size * 0.1, y - size * 0.1); g.lineTo(x + size * 0.2, y + size * 0.3); g.lineTo(x + size * 0.6, y + size * 0.05); g.stroke();
+  }
 }
 
 function drawShrooms(g, def, x, y, s) {
@@ -238,18 +244,54 @@ function drawPrism(g, x, y, s, t) {
   g.beginPath(); g.arc(x + Math.cos(a) * 20 * s, y + Math.sin(a) * 20 * s, 2 * s, 0, Math.PI * 2); g.fill();
 }
 
-function drawGloomling(g, x, y, t, seed) {
-  const wob = Math.sin(t / 220 + seed) * 2;
+/** A Gloomling: a little ghost. kind 'brute' is a bigger, horned one; 'lord' a crowned giant with its ❤ left. */
+function drawGloomling(g, x, y, t, seed, kind, hp) {
+  const s = kind === 'lord' ? 1.45 : kind === 'brute' ? 1.2 : 1;
+  const wob = Math.sin(t / (kind === 'lord' ? 520 : 220) + seed) * 2;
+  g.save();
+  g.translate(x, y); g.scale(s, s);
   g.fillStyle = '#00000040';
-  g.beginPath(); g.ellipse(x, y + 18, 16, 5, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#5b3f7a'; g.strokeStyle = '#2e1f40'; g.lineWidth = 2;
+  g.beginPath(); g.ellipse(0, 18, 16, 5, 0, 0, Math.PI * 2); g.fill();
+  if (kind === 'lord') {
+    // a dark aura
+    const a = g.createRadialGradient(0, 0, 4, 0, 0, 30);
+    a.addColorStop(0, '#2a173a88'); a.addColorStop(1, '#2a173a00');
+    g.fillStyle = a; g.beginPath(); g.arc(0, 0, 30, 0, Math.PI * 2); g.fill();
+  }
+  if (kind === 'brute' || kind === 'lord') {
+    // horns
+    g.fillStyle = kind === 'lord' ? '#d9c9a8' : '#e8d8c0'; g.strokeStyle = '#2e1f40'; g.lineWidth = 1.5;
+    for (const d of [-1, 1]) {
+      g.beginPath(); g.moveTo(d * 9, -12 + wob); g.quadraticCurveTo(d * 20, -18 + wob, d * 17, -27 + wob); g.lineTo(d * 13, -14 + wob);
+      g.closePath(); g.fill(); g.stroke();
+    }
+  }
+  g.fillStyle = kind === 'lord' ? '#3d2350' : kind === 'brute' ? '#6e2f57' : '#5b3f7a';
+  g.strokeStyle = '#2e1f40'; g.lineWidth = 2;
   g.beginPath();
-  g.arc(x, y - 2 + wob, 16, Math.PI, 0);
-  for (let k = 0; k <= 4; k++) g.lineTo(x + 16 - k * 8, y + 14 + (k % 2 ? -4 : 0) + wob);
+  g.arc(0, -2 + wob, 16, Math.PI, 0);
+  for (let k = 0; k <= 4; k++) g.lineTo(16 - k * 8, 14 + (k % 2 ? -4 : 0) + wob);
   g.closePath(); g.fill(); g.stroke();
-  g.fillStyle = '#c8ff6a';
-  g.beginPath(); g.ellipse(x - 6, y - 4 + wob, 3, 4, 0, 0, Math.PI * 2); g.fill();
-  g.beginPath(); g.ellipse(x + 6, y - 4 + wob, 3, 4, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = kind === 'lord' ? '#ffd23a' : kind === 'brute' ? '#ff7a6b' : '#c8ff6a';
+  g.beginPath(); g.ellipse(-6, -4 + wob, 3, 4, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(6, -4 + wob, 3, 4, 0, 0, Math.PI * 2); g.fill();
+  if (kind === 'lord') {
+    // a crown
+    g.fillStyle = '#f5c542'; g.strokeStyle = '#a8781a'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(-9, -15 + wob);
+    for (const [px, py] of [[-9, -25], [-4.5, -19], [0, -27], [4.5, -19], [9, -25], [9, -15]]) g.lineTo(px, py + wob);
+    g.closePath(); g.fill(); g.stroke();
+  }
+  g.restore();
+  if (kind === 'lord' && hp != null) {
+    // hearts left, above its head
+    const label = `❤ ${hp}`;
+    g.font = 'bold 13px system-ui, ' + EMOJI_FONT;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    const w = g.measureText(label).width + 12;
+    g.fillStyle = '#ffffffe6'; roundRect(g, x - w / 2, y - 62, w, 18, 9); g.fill();
+    g.fillStyle = '#b8325a'; g.fillText(label, x, y - 52.5);
+  }
 }
 
 /** A speckled egg in its breed's colours. */
@@ -358,6 +400,24 @@ function drawMoonStar(g, def, x, y, s, t) {
   }
 }
 
+/** Crystals: a cluster of pointed gems in the item's hue, more and taller with each tier. */
+function drawCrystal(g, def, x, y, s, t) {
+  drawShadow(g, x, y + 6 * s, 18 * s);
+  const spikes = [[0, 1], [-9, 0.7], [9, 0.75], [-16, 0.45], [16, 0.5]].slice(0, Math.min(5, def.tier + 1));
+  const h = (14 + def.tier * 4) * s, shine = 0.5 + 0.5 * Math.sin(t / 500 + def.tier);
+  for (const [dx, k] of spikes.slice().reverse()) {
+    const w = 6 * s, top = y + 12 * s - h * k * 1.6, px = x + dx * s;
+    const grad = g.createLinearGradient(px - w, 0, px + w, 0);
+    grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.45, def.hue); grad.addColorStop(1, def.hue + '99');
+    g.fillStyle = grad; g.strokeStyle = '#3b3a3666'; g.lineWidth = 1.2 * s;
+    g.beginPath();
+    g.moveTo(px - w, y + 12 * s); g.lineTo(px - w, top + w); g.lineTo(px, top); g.lineTo(px + w, top + w); g.lineTo(px + w, y + 12 * s);
+    g.closePath(); g.fill(); g.stroke();
+  }
+  g.fillStyle = `rgba(255, 255, 255, ${0.4 + shine * 0.5})`;
+  g.beginPath(); g.arc(x - 2 * s, y + 12 * s - h * 1.3, 2 * s, 0, Math.PI * 2); g.fill();
+}
+
 function drawHalo(g, x, y, s, t) {
   const r = 34 * s * (1 + 0.05 * Math.sin(t / 300));
   const grad = g.createRadialGradient(x, y, r * 0.4, x, y, r);
@@ -387,6 +447,7 @@ function drawItem(g, it, x, y, s, t, opts = {}) {
     case 'goalstar': drawGoalStar(g, it, x, y, s, t); break;
     case 'guardian': drawGuardian(g, def, x, y, s); break;
     case 'moonstar': drawMoonStar(g, def, x, y, s, t); break;
+    case 'crystal': drawCrystal(g, def, x, y, s, t); break;
     case 'bubble': {
       drawItem(g, { type: it.inner, charges: startCharges(it.inner) }, x, y, s * 0.72, t, { pills: false });
       const r = 27 * s * (1 + 0.04 * Math.sin(t / 260));
@@ -598,7 +659,7 @@ function draw(t) {
   for (const e of enemies) {
     if (tiles[e.i].mist) continue;
     const a = center(e.from), b = center(e.i), k = clamp((t - e.t0) / 600, 0, 1), m = easeInOut(k);
-    drawGloomling(g, a.x + (b.x - a.x) * m, a.y + (b.y - a.y) * m - Math.sin(k * Math.PI) * 10, t, e.i);
+    drawGloomling(g, a.x + (b.x - a.x) * m, a.y + (b.y - a.y) * m - Math.sin(k * Math.PI) * 10, t, e.i, e.kind, e.hp);
   }
 
   // harvest markers (queued + in progress)
@@ -610,7 +671,7 @@ function draw(t) {
     const c = center(+k);
     g.fillStyle = '#ffffffdd';
     g.beginPath(); g.arc(c.x + 20, c.y - 20, 9, 0, Math.PI * 2); g.fill();
-    drawEmoji(g, '⛏', c.x + 20, c.y - 20, 12);
+    drawEmoji(g, lordAt(+k) ? '⚔' : '⛏', c.x + 20, c.y - 20, 12);
   }
 
   // consume puffs

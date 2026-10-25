@@ -379,11 +379,13 @@ function goalProgress(g) {
     case 'heal':    return { text: 'Heal all the dead land', v: world.totalDead - deadCount(), n: world.totalDead };
     case 'make':    return { text: makeText(g), v: world.made[g.item] || 0, n: g.n };
     case 'banish':  return { text: `Banish ${g.n} Gloomlings`, v: world.banished, n: g.n };
+    case 'drive':   return { text: driveText(g), v: world.lords || 0, n: g.n };
     case 'collect': return { text: `Collect ${g.n} ${g.what === 'moon' ? '🌙 Moonstones' : g.what}`, v: world.collected[g.what] || 0, n: g.n };
   }
 }
+const driveText = (g) => `Drive off ${g.n > 1 ? `${g.n} Gloom Lords` : 'the Gloom Lord'}`;
 function goalText(g) {
-  return g.type === 'heal' ? 'Heal all the land' : g.type === 'make' ? makeText(g) :
+  return g.type === 'heal' ? 'Heal all the land' : g.type === 'make' ? makeText(g) : g.type === 'drive' ? driveText(g) :
     g.type === 'banish' ? `Banish ${g.n} Gloomlings` : `Collect ${g.n} ${g.what === 'moon' ? '🌙' : g.what}`;
 }
 

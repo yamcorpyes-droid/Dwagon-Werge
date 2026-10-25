@@ -166,7 +166,10 @@ function handleClick(idx) {
   if (tiles[idx].mist) { selected = -1; updateInfo(); tryClearMist(tiles[idx].mist); return; }
   if (tiles[idx].dead) {
     selected = it ? idx : -1; updateInfo();
-    if (enemyAt(idx)) toast('A Gloomling! Heal the land it stands on to banish it.');
+    const e = enemyOn(idx);
+    if (e && e.kind === 'lord') queueAttack(idx);
+    else if (e && e.kind === 'brute') toast(`A Gloom Brute! Its land needs ${CONFIG.BRUTE_EXTRA} extra healing. Heal it to banish the Brute.`);
+    else if (e) toast('A Gloomling! Heal the land it stands on to banish it.');
     else if (it) toast('Heal this land to unlock what is hidden here.');
     return;
   }

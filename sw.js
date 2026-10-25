@@ -6,7 +6,7 @@
 
    When you add or rename a file, add it to FILES and bump CACHE.
    ========================================================================== */
-const CACHE = 'dwagon-merge-v6';
+const CACHE = 'dwagon-merge-v7';
 const FILES = [
   './',
   'index.html',
@@ -15,7 +15,7 @@ const FILES = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'js/config.js',
-  'js/data/items.js', 'js/data/dwagons.js', 'js/data/worlds.js', 'js/data/levels.js', 'js/data/quests.js',
+  'js/data/items.js', 'js/data/items_more.js', 'js/data/dwagons.js', 'js/data/worlds.js', 'js/data/levels.js', 'js/data/levels_more.js', 'js/data/quests.js',
   'js/engine/catalog.js', 'js/engine/state.js', 'js/engine/rules.js', 'js/engine/healing.js',
   'js/engine/timers.js', 'js/engine/dwagons.js', 'js/engine/enemies.js', 'js/engine/input.js',
   'js/render/draw.js', 'js/ui/panels.js', 'js/ui/map.js', 'js/ui/editor.js', 'js/engine/sound.js', 'js/engine/save.js',

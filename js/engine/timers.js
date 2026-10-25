@@ -7,7 +7,7 @@
    float away. Every wait can be skipped with EARNED Moonstones 🌙.
    Timestamps use Date.now() so they survive closing the tab.
    ========================================================================== */
-function dwagonStamina(def) { return 3 + 2 * def.dwagon + (def.ability === 'hardy' ? 2 : 0); }
+function dwagonStamina(def) { return 3 + 2 * def.dwagon + (abilityOf(def).energy || 0); }
 function maxCharges(def) { return def.make ? def.make.charges : def.dwagon ? dwagonStamina(def) : 0; }
 
 /** Resting is faster in a bigger nest: Twig 1×, Cozy 2×, Grand 4×. */

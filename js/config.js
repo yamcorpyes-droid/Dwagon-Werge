@@ -11,6 +11,11 @@ const CONFIG = {
   GLOOM_MOVE_MS: [3000, 6500],           // Gloomlings shuffle around this often
   TOTEM_MS: 20000,                       // a Gloom Totem tries to summon this often...
   TOTEM_MAX: 2,                          // ...while fewer than this many Gloomlings are near it
+  BRUTE_EXTRA: 4,                        // a Gloom Brute makes its tile need this much extra healing...
+  BRUTE_SLOW: 1.6,                       // ...and shuffles about this many times slower than a Gloomling
+  LORD_HP: 8,                            // a Gloom Lord can't be healed away: dwagon hits needed to drive it off
+  LORD_MS: 25000,                        // a Gloom Lord calls a Gloomling to its side this often
+  LORD_LOOT: ['goldchest', 'chestkey'],  // what a Gloom Lord leaves behind when driven off
   GRASS_CHANCE: 0.07,                    // chance freshly healed empty land sprouts grass
   BUBBLE_CHANCE: 0.3,                    // chance a 5-merge also gives a Bonus Bubble
   STORAGE_SIZE: 12,

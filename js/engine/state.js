@@ -103,7 +103,7 @@ function discover(type) {
 }
 
 function freshStats() {
-  return { made: {}, dl: {}, healed: 0, coins: 0, bricks: 0, moon: 0, harvests: 0, bonus5: 0, merges: 0, banished: 0, levels: 0, guardians: 0, chalices: 0, mist: 0, campClear: 0, treats: 0, keys: 0, cradles: 0 };
+  return { made: {}, dl: {}, healed: 0, coins: 0, bricks: 0, moon: 0, harvests: 0, bonus5: 0, merges: 0, banished: 0, levels: 0, guardians: 0, chalices: 0, mist: 0, campClear: 0, treats: 0, keys: 0, cradles: 0, lords: 0 };
 }
 
 /** Build a world fresh from its definition. */
@@ -117,11 +117,11 @@ function buildWorld(key) {
     }))),
     items: new Array(rows * cols).fill(null),
     enemies: [], tasks: [], mistOpen: [],
-    made: {}, collected: { coins: 0, bricks: 0, moon: 0 }, banished: 0, complete: false,
+    made: {}, collected: { coins: 0, bricks: 0, moon: 0 }, banished: 0, lords: 0, complete: false,
     totemNext: {}, cam: null,
   };
   for (const [r, c, type] of def.items) w.items[r * cols + c] = makeItem(type);
-  w.enemies = (def.gloom || []).map(([r, c]) => ({ i: r * cols + c, from: r * cols + c, t0: 0, next: 0 }));
+  w.enemies = (def.gloom || []).map(([r, c, kind]) => makeEnemy(r * cols + c, kind));
   w.totalDead = w.tiles.filter(t => t.dead).length;
   w.items.forEach((it, i) => { if (it && !w.tiles[i].dead && !w.tiles[i].mist) discovered.add(it.type); });
   // label position for each mist region

@@ -8,7 +8,7 @@
    ========================================================================== */
 const ED_TOOLS = [
   ['live', '🌿 Living land'], ['dead', '🟫 Dead land'], ['deep', '⬛ Deep dead land'],
-  ['item', '🧺 Place item'], ['gloom', '👻 Gloomling'], ['home', '🏠 Start view'], ['erase', '🧽 Erase'],
+  ['item', '🧺 Place item'], ['gloom', '👻 Gloomling'], ['brute', '👹 Gloom Brute'], ['lord', '👑 Gloom Lord'], ['home', '🏠 Start view'], ['erase', '🧽 Erase'],
 ];
 const ED_QUICK = [['g_piece', '🗿 Piece'], ['g_shard', '🗿 Shard'], ['basket', '🧺'], ['flower', '🌸'], ['gloomtotem', 'Totem'], ['woodchest', 'Chest']];
 const ED_LAND = { live: '.', dead: '#', deep: 'X' };
@@ -127,9 +127,10 @@ function edPaint(e) {
     if (edTool === 'live' && gl >= 0) ed.gloom.splice(gl, 1);       // Gloomlings only live on dead land
   } else if (edTool === 'item') {
     if (it >= 0) ed.items[it][2] = edItem; else ed.items.push([r, c, edItem]);
-  } else if (edTool === 'gloom') {
+  } else if (edTool === 'gloom' || edTool === 'brute' || edTool === 'lord') {
     if (ed.land[r][c] === '.') { toast('Gloomlings go on dead land.'); edPainting = false; return; }
-    if (gl < 0) ed.gloom.push([r, c]);
+    const g = edTool === 'gloom' ? [r, c] : [r, c, edTool];
+    if (gl < 0) ed.gloom.push(g); else ed.gloom[gl] = g;
   } else if (edTool === 'home') {
     if (ed.land[r][c] !== '.') { toast('The start view goes on living land.'); edPainting = false; return; }
     ed.home = [r, c];
@@ -182,7 +183,7 @@ function edDraw() {
     drawItem(g, { type, charges: startCharges(type) }, c * TILE + TILE / 2, r * TILE + TILE / 2, 0.9, t,
       { pills: false, locked: ed.land[r][c] !== '.' });
   }
-  for (const [r, c] of ed.gloom) drawGloomling(g, c * TILE + TILE / 2, r * TILE + TILE / 2, t, r + c);
+  for (const [r, c, kind] of ed.gloom) drawGloomling(g, c * TILE + TILE / 2, r * TILE + TILE / 2, t, r + c, kind, kind === 'lord' ? CONFIG.LORD_HP : null);
   const [hr, hc] = ed.home;
   g.strokeStyle = '#ffd34d'; g.lineWidth = 5;
   g.strokeRect(hc * TILE + 3, hr * TILE + 3, TILE - 6, TILE - 6);
@@ -213,7 +214,7 @@ function edApplyData() {
     items: (o.items || []).filter(x => inside(x) && ITEMS[x[2]]),
     gloom: (o.gloom || []).filter(inside),
     home: inside(o.home) ? o.home : [Math.floor(rows / 2), Math.floor(cols / 2)],
-    bonus: Array.isArray(o.bonus) ? o.bonus.filter(g => ['make', 'banish', 'collect'].includes(g.type) && (g.type !== 'make' || ITEMS[g.item])) : [],
+    bonus: Array.isArray(o.bonus) ? o.bonus.filter(g => ['make', 'banish', 'collect', 'drive'].includes(g.type) && (g.type !== 'make' || ITEMS[g.item])) : [],
     reward: (o.reward || []).filter(t => ITEMS[t]),
   };
   edRender();
@@ -229,7 +230,8 @@ function edProblems() {
   if (ed.land[ed.home[0]][ed.home[1]] !== '.') out.push('the 🏠 start view should be on living land');
   const source = ed.items.some(([r, c, t]) => ed.land[r][c] === '.' && (ITEMS[t].chain === 'basket' || ITEMS[t].make || ITEMS[t].heal));
   if (!source) out.push('put a Seed Basket (or plant) on living land, or there is no way to make Life Essence');
-  for (const g of ed.bonus) if (g.type === 'banish' && !ed.gloom.length && !count('gloomtotem')) out.push('a banish goal needs Gloomlings or a Gloom Totem');
+  for (const g of ed.bonus) if (g.type === 'banish' && !ed.gloom.some(x => x[2] !== 'lord') && !count('gloomtotem')) out.push('a banish goal needs Gloomlings or a Gloom Totem');
+  for (const g of ed.bonus) if (g.type === 'drive' && ed.gloom.filter(x => x[2] === 'lord').length < g.n) out.push(`a drive-off goal needs ${g.n} 👑 Gloom Lord${g.n > 1 ? 's' : ''}`);
   return out;
 }
 function edCheck() {

@@ -151,7 +151,21 @@ What was built:
 
 ---
 
-## Stage 5: Content expansion
+### Stage 4 follow-ups ✅ done
+- **Less waiting in World 4:** Echo Canyon gets 2 grass tufts, and Eagle Crag gets a slightly bigger map plus a sprout. In the simulation they now wait on regrowing plants about 30% of the time instead of 35–40%.
+- **Finales:** Heart of the Gloom is bigger (25×25) and about 2.2× a typical World 5 level. The Summit has 2 more sprouts and its Guardian is closer in, so it waits less (26% instead of 35%) but is shorter (about 1.4× its world). Every longer version of The Summit or Lighthouse Point tested also meant more waiting, so length and waiting pull against each other there.
+- A saved run of a level whose map changed size is dropped and its Chalice refunded, as before.
+
+## Stage 5: Content expansion ✅ done
+- **17 new item chains** (34 item chains in all, 347 items in the collection and Dwagon books): Fruit Trees, Flower Beds, Wheat & Hay, Sweet Treats (dwagon food), Snow & Ice, Spirit Totems, Lava Rocks, Ancient Ruins, Desert Plants, Beach & Shells, Ponds, Crystals (with their own drawn gems), Gloomy Graves, Toadstool Houses, Clouds, Star Fragments, and Keepsakes (little gift hearts that open into presents). Seven of them end in a new Wonder: Golden Orchard, Aurora, Spirit Fountain, Fire Mountain, Crystal Throne, Constellation and Forever Heart. The new items live in `js/data/items_more.js`.
+- **20 dwagon breeds** (14 new: Grove, Honey, Frost, Forest, Magma, Storm, Sand, Coral, Gem, Rainbow, Shadow, Sun, Lunar, Cloud). Abilities are now plain data (`ABILITIES` in `js/data/dwagons.js`): extra energy, speed, faster harvesting of some chains, a chance to find something, healing, or bravery against Gloom Lords.
+- **New enemies:** horned **Gloom Brutes** (their tile needs 4 extra healing, and they move slower; later Gloom Totems sometimes call them). Crowned **Gloom Lords** can't be healed away. Tap one to send dwagons, one hit per trip: 8 ❤, and bigger and braver dwagons hit harder. A Lord calls Gloomlings to its side, and when driven off it leaves a Golden Chest and a key. There's a new "Drive off the Gloom Lord" bonus goal, and Brutes and Lords can be placed in the level editor.
+- **80 Adventures in 12 worlds:** Blossom Vale, Frostfall Peaks, Cinder Wastes, Sunken Sands, Crystal Caverns, Hollow Graves and Starfall Sky (`js/data/levels_more.js`). Each world introduces its breeds and chains. Lords appear from Cinder Wastes on, and the last world ends at The Starfall Crown. World Map tabs scroll and keep the open world in view.
+- **Pacing (simulated fast player, 8 seeds; a person takes roughly 2–3× as long):** every level can be won with all 3 Stars. Time to the Guardian is mostly 4–8 min in Worlds 6–12, with finales at 8–20 min. Healing everything takes 10–50 min. Pacing is spiky, like the original: a few levels run long (Coral Reef 11 min, The Crystal Throne 20 min) and a few short (Cloudstep Isles 2.5 min).
+- **Quests and Market:** 13 new quests (Gloom Lords, 12 and 20 breeds, 120 and 180 Stars, new chains, the Constellation). The Market sells each new breed's egg once you've found one, plus candy. The Dwagon Roost can lay any breed, and Goal Stars sometimes give a Love Letter.
+- Older saves keep working: enemies are saved as before, with Brutes and Lords added alongside. The existing chests' loot is unchanged, so Worlds 1–5 play as they did.
+
+## (original Stage 5 plan, for reference)
 Getting toward the original's 80+ levels and 500+ items.
 1. **New item chains** (target about 40, each 5 to 10 tiers):
    - fruit trees

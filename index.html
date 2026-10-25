@@ -24,7 +24,8 @@
                        up to 3 Stars each; starting one uses an earned Chalice
     Level editor ..... hidden: tap the title 5 times; saves to "My Levels"
     Dwagons .......... hatch from eggs, fly out to harvest; need Nests in camp
-    Gloomlings ....... wander dead land and resist healing; Gloom Totems summon more
+    Gloomlings ....... wander dead land and resist healing; Gloom Totems summon more;
+                       Gloom Brutes resist more; Gloom Lords need dwagons to drive off
     Limits ........... baskets & plants regrow, dwagons have energy, bubbles float
                        away, big chests need keys; Moonstones 🌙 skip any of it
     Chests, Coins, Bricks, Grass, Mushrooms, Stones, Treats, Keys, Geodes
@@ -36,10 +37,12 @@
     css/style.css ........ page styling
     js/config.js ......... tuning numbers (timers, costs, chances, win message)
     js/data/ ............. PLAIN DATA: edit these to add content
-      items.js ........... every item chain
+      items.js ........... the core item chains
+      items_more.js ...... the item chains of the later worlds
       dwagons.js ......... dwagon breeds, levels, abilities, Dwagon Power
       worlds.js .......... the Home Camp map, mist and starting items
-      levels.js .......... Adventure levels
+      levels.js .......... Adventure levels (Worlds 1-5)
+      levels_more.js ..... Adventure levels (Worlds 6-12)
       quests.js .......... quests and Market prices
     js/engine/ ........... the rules
       catalog.js ......... turns the data tables into ITEMS / LEVELS / WORLDS
@@ -47,7 +50,7 @@
       rules.js ........... merging, chests, selling, storage, quests
       healing.js ......... healing dead land and clearing mist
       timers.js .......... regrowing charges, dwagon energy, Moonstones, treats
-      dwagons.js ......... dwagon AI    enemies.js ... Gloomlings & totems
+      dwagons.js ......... dwagon AI    enemies.js ... Gloomlings, Brutes, Lords & totems
       input.js ........... camera, mouse and touch
       sound.js ........... tiny synth   save.js ...... save, load, backups
     js/render/draw.js .... all canvas drawing
@@ -133,14 +136,14 @@
       <li>🌙 <b>Moonstones</b> skip any wait: refill a basket or plant, wake a dwagon, pop a bubble or pick a lock. You only ever <b>earn</b> them, from quests, Adventures, 5-merges and Moonstone Geodes.</li>
       <li>Golden Chests and Dwagon Hoards are locked: a 🔑 <b>Chest Key</b> on the board opens them.</li>
       <li><b>Double-click</b> flowers and trees to make ✨ Life Essence. <b>Click</b> an orb to heal the dead land <b>closest to it</b>.</li>
-      <li>Merge 3 eggs to hatch a <b>dwagon</b>. There are 6 breeds (Meadow, Stone, Tide, Ember, Bloom and Star), each with its own special ability and 8 levels. Merging three level-4 dwagons makes a <b>Cradle</b>: tap it to hatch a level 5.</li>
-      <li><b>Double-click</b> rocks, 🍄 mushrooms or 🌿 grass and a dwagon flies over to harvest them. Idle dwagons also harvest things right next to them by themselves (in Adventures they leave alone anything a bonus goal still needs). In camp, dwagons need <b>Nests</b> to sleep in, or they nap instead of working.</li>
+      <li>Merge 3 eggs to hatch a <b>dwagon</b>. There are 20 breeds (Meadow, Stone, Tide, Ember, Bloom and Star to start with, and 14 more in the later worlds), each with its own special ability and 8 levels. Merging three level-4 dwagons makes a <b>Cradle</b>: tap it to hatch a level 5.</li>
+      <li><b>Double-click</b> rocks, 🍄 mushrooms, 🌿 grass, shells, snow, ruins and the like, and a dwagon flies over to harvest them. Idle dwagons also harvest things right next to them by themselves (in Adventures they leave alone anything a bonus goal still needs). In camp, dwagons need <b>Nests</b> to sleep in, or they nap instead of working.</li>
       <li>🐲 <b>Dwagon Power</b> is the strength of the dwagons in your camp. It clears mist (Stars do too) and gives you more storage. See it all in the 🐲 Dwagon Book.</li>
-      <li><b>Gloomlings</b> roam the dead land and make it harder to heal. Heal the tile they stand on to banish them. Heal a 🗿 <b>Gloom Totem</b> to stop it summoning more.</li>
-      <li>The 🗺 <b>World Map</b> has 30 Adventures in 5 worlds. Each hides a broken 🗿 <b>Guardian Statue</b> under its dead land: heal your way to the pieces and merge them to win. That's ⭐ 1 Star; the bonus goals and healing all the land give ⭐ 2 more. Stars clear the <b>mist</b> around your camp.</li>
+      <li><b>Gloomlings</b> roam the dead land and make it harder to heal. Heal the tile they stand on to banish them. Heal a 🗿 <b>Gloom Totem</b> to stop it summoning more. Big horned <b>Gloom Brutes</b> make their land even harder to heal. A crowned 👑 <b>Gloom Lord</b> can't be healed away at all: <b>tap it</b> to send your dwagons to drive it off, one hit per trip (bigger dwagons hit harder).</li>
+      <li>The 🗺 <b>World Map</b> has 80 Adventures in 12 worlds. Each hides a broken 🗿 <b>Guardian Statue</b> under its dead land: heal your way to the pieces and merge them to win. That's ⭐ 1 Star; the bonus goals and healing all the land give ⭐ 2 more. Stars clear the <b>mist</b> around your camp.</li>
       <li>Starting an Adventure uses a 🏆 <b>Chalice</b> (coming back to one you left is free). You win Chalices back by finishing Adventures, from quests, Goal Stars and Wonders, or buy one in the Market with coins. Never with money.</li>
       <li><b>Click</b> coins, bricks, bubbles and chests to collect or open them. Spend what you earn in the 🛒 Market. Keep spare camp items in 📦 Storage.</li>
-      <li>✨ <b>Wonders</b> sit at the top of some merge chains (World Tree, Everbloom Garden, Toadstool Palace, Sunstone Circle, Dwagon Roost, Moon Altar). They add lots of Dwagon Power and make useful things.</li>
+      <li>✨ <b>Wonders</b> sit at the top of some merge chains (World Tree, Dwagon Roost, Moon Altar, Aurora, Crystal Throne, Constellation and more; the 🐲 Dwagon Book lists them all). They add lots of Dwagon Power and make useful things.</li>
       <li>Some mist has a <b>cloud key</b>: it shows an item, and dropping that item on the mist clears it.</li>
       <li>You can only hold so many coins. 🏺 <b>Coin Jars</b> (merge them into Coffers and Vaults) hold more.</li>
       <li>Every finished quest also gives a ⭐ <b>Goal Star</b>: tap it 5 times for 5 prizes. In Adventures, 🌠 <b>Moon Stars</b> fall now and then; collect them, merge them, or leave them to fly home when you finish.</li>
@@ -240,9 +243,11 @@
 <!-- Plain scripts (not modules) so the game opens straight from the folder. Order matters. -->
 <script src="js/config.js"></script>
 <script src="js/data/items.js"></script>
+<script src="js/data/items_more.js"></script>
 <script src="js/data/dwagons.js"></script>
 <script src="js/data/worlds.js"></script>
 <script src="js/data/levels.js"></script>
+<script src="js/data/levels_more.js"></script>
 <script src="js/data/quests.js"></script>
 <script src="js/engine/catalog.js"></script>
 <script src="js/engine/state.js"></script>

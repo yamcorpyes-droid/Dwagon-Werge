@@ -169,6 +169,7 @@ function renderMarket() {
   list.innerHTML = '';
   for (const offer of MARKET) {
     const def = ITEMS[offer.type];
+    if (offer.found && !discovered.has(offer.type)) continue;   // sold once you've found one
     const row = document.createElement('div');
     row.className = 'row';
     row.appendChild(iconCanvas(offer.type, 44));
@@ -261,7 +262,7 @@ function renderDwagonBook() {
     Object.keys(regions).filter(k => regions[k].key).map(k =>
       `<div class="${isOpen(k) ? 'done' : ''}">${isOpen(k) ? '✓' : '🗝'} Cloud key: drop a <b>${ITEMS[regions[k].key].name}</b> on its mist</div>`).join('') +
     `<div>📦 Storage holds <b>${storageSize()}</b> items <span class="muted">(+2 for every 50 power, up to 36)</span></div>` +
-    `<div>✨ <b>Wonders</b> (the top of some merge chains) add lots of power: World Tree 200, Everbloom Garden 120, Toadstool Palace 150, Sunstone Circle 300, Dwagon Roost 250, Moon Altar 400.</div>`;
+    `<div>✨ <b>Wonders</b> (the top of some merge chains) add lots of power: ${Object.values(ITEMS).filter(d => d.wonder).map(d => `${d.name} ${d.wonder}`).join(', ')}.</div>`;
 
   // count each dwagon item in the current land
   const owned = {};

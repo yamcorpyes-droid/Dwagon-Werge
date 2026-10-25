@@ -18,8 +18,9 @@ function packWorld(w) {
     mistOpen: w.mistOpen,
     // [type, charges, bubble contents, regrow timer start, bubble expiry]
     items: w.items.map(it => it ? [it.type, it.charges, it.inner || 0, it.cd || 0, it.exp || 0] : 0),
-    enemies: w.enemies.map(e => e.i),
-    made: w.made, collected: w.collected, banished: w.banished, complete: w.complete, perfect: !!w.perfect,
+    // a plain tile index for a Gloomling; [tile, kind, hp] for Brutes and Lords
+    enemies: w.enemies.map(e => e.kind ? [e.i, e.kind, e.hp || 0] : e.i),
+    made: w.made, collected: w.collected, banished: w.banished, lords: w.lords || 0, complete: w.complete, perfect: !!w.perfect,
   };
 }
 
@@ -60,11 +61,15 @@ function unpackWorld(key, d) {
   w.tiles.forEach(t => { if (w.mistOpen.includes(t.mist)) t.mist = null; });
   if (grow) d.items.forEach((s, k) => { w.items[at(k)] = unpackItem(s); });
   else w.items = d.items.map(unpackItem);
-  const saved = (d.enemies || []).map(k => ({ i: at(k), from: at(k), t0: 0, next: 0 }));
+  const saved = (d.enemies || []).map(s => {
+    const e = makeEnemy(at(Array.isArray(s) ? s[0] : s), Array.isArray(s) ? s[1] : null);
+    if (e.kind === 'lord' && s[2] > 0) e.hp = s[2];
+    return e;
+  });
   w.enemies = grow ? w.enemies.filter(e => !inOld(e.i)).concat(saved) : saved;
   w.grew = grow;
   w.made = fixCounts(d.made); w.collected = { coins: 0, bricks: 0, moon: 0, ...d.collected };
-  w.banished = d.banished || 0; w.complete = !!d.complete; w.perfect = !!d.perfect;
+  w.banished = d.banished || 0; w.lords = d.lords || 0; w.complete = !!d.complete; w.perfect = !!d.perfect;
   return w;
 }
 

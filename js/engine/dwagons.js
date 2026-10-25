@@ -42,7 +42,9 @@ function queueHarvest(idx) {
   Sound.pop();
 }
 
-const isRock = (def) => def.chain === 'stone' || def.id === 'geode';
+/** A dwagon's ability (see ABILITIES in js/data/dwagons.js), and whether a list of chains / item ids covers an item. */
+const abilityOf = (def) => ABILITIES[def.ability] || {};
+const appliesTo = (list, def) => !!list && (list.includes(def.chain) || list.includes(def.id));
 
 /** A dwagon (at `by`) finishes harvesting `target`. */
 function doHarvest(target, by) {
@@ -71,15 +73,12 @@ function doHarvest(target, by) {
 
 /** Breed abilities that trigger after a harvest. */
 function breedBonus(dw, target, harvested) {
-  const c = center(target);
-  const bonus = (type, text) => {
-    if (spawnNear(target, type) >= 0) addFloater(c.x, c.y - 40, text, '#fff3b0');
-  };
-  if (dw.ability === 'miner' && isRock(harvested) && Math.random() < 0.25) bonus('brick', 'Miner: extra brick!');
-  if (dw.ability === 'bloom' && Math.random() < 0.25) bonus('essence1', 'Blossoming: Life Essence!');
-  if (dw.ability === 'lucky' && Math.random() < 0.1) bonus('moonshard', 'Lucky: Moon Shard!');
-  if (dw.ability === 'healer') {
-    // send one healing point to the nearest dead land
+  const a = abilityOf(dw), c = center(target);
+  if (a.find && (!a.findOn || appliesTo(a.findOn, harvested)) && Math.random() < a.find[1]) {
+    if (spawnNear(target, a.find[0]) >= 0) addFloater(c.x, c.y - 40, `${a.name}: ${ITEMS[a.find[0]].name}!`, '#fff3b0');
+  }
+  for (let k = 0; k < (a.heal || 0); k++) {
+    // send a healing point to the nearest dead land
     let best = -1, bd = Infinity;
     for (let i = 0; i < N; i++) {
       if (needOf(i) <= 0) continue;
@@ -134,17 +133,17 @@ function updateDwagons(dt, t) {
       continue;
     }
     if (job.phase === 'work') {
-      const target = items[job.target];
-      const minerBoost = def.ability === 'miner' && target && isRock(ITEMS[target.type]) ? 2 : 1;
-      if (t - job.t0 >= CONFIG.HARVEST_MS / (1 + 0.35 * (def.dwagon - 1)) / minerBoost) {
-        doHarvest(job.target, i);
+      const target = items[job.target], lord = lordAt(job.target);
+      const boost = !lord && target && appliesTo(abilityOf(def).fast, ITEMS[target.type]) ? 2 : 1;
+      if (t - job.t0 >= CONFIG.HARVEST_MS / (1 + 0.35 * (def.dwagon - 1)) / boost) {
+        if (lord) strikeLord(job.target, i); else doHarvest(job.target, i);
         job.phase = 'back';
       }
       continue;
     }
     // flying out or back
     const dest = center(job.phase === 'out' ? job.target : i);
-    const speed = CONFIG.DWAGON_SPEED * (1 + 0.2 * (def.dwagon - 1)) * (def.ability === 'swift' ? 1.5 : 1);
+    const speed = CONFIG.DWAGON_SPEED * (1 + 0.2 * (def.dwagon - 1)) * (abilityOf(def).speed || 1);
     const dx = dest.x - job.x, dy = dest.y - job.y, d = Math.hypot(dx, dy), step = speed * dt;
     if (d <= step) {
       job.x = dest.x; job.y = dest.y;

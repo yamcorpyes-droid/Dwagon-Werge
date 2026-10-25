@@ -68,8 +68,19 @@ function baseDescription(def, it) {
   if (def.harvest) return `Double-click to send a dwagon to harvest it.${def.next ? ' Merge 3 for a bigger one with more loot.' : ''}`;
   if (def.collect === 'moon') return `Click to collect ${def.value} 🌙. Moonstones skip waits: refill baskets and plants, wake tired dwagons, pop bubbles and pick locks.${def.next ? ' Merge 3 first for a bonus!' : ''}`;
   if (def.collect) return `Click to collect ${def.value} ${def.collect}.${def.next ? ' Merge 3 first for a bonus!' : ''}`;
-  if (def.open) return `Click to open it and spill ${def.open.n} surprises.${def.locked ? ' Locked: needs a 🔑 Chest Key.' : ''}${def.next ? ' Merge 3 for a better chest.' : ''}`;
+  if (def.open) return `Click to open it and spill ${def.open.n} surprises.${def.locked ? ' Locked: needs a 🔑 Chest Key.' : ''}${def.next ? ` Merge 3 for ${aName(def.next)}.` : ''}`;
+  if (def.make) return `Double-click to make ${makesText(def.make.gives)}.${def.next ? ` Merge 3 for ${aName(def.next)}.` : ''}`;
+  if (def.feed) return `Click to give ${def.feed} ⚡ energy to your most tired dwagon (or drop it on one).${def.next ? ` Merge 3 for ${aName(def.next)}.` : ''}`;
+  if (def.next) return `Merge 3 for ${aName(def.next)}.`;
   return '';
+}
+/** "a Sweet Berry", "an Iron Chest" */
+const aName = (id) => `${/^[aeiou]/i.test(ITEMS[id].name) ? 'an' : 'a'} ${ITEMS[id].name}`;
+/** "a Sweet Berry", or "Sweet Berry, Berry Pie or Silver Coin" for a random pick (most likely first). */
+function makesText(gives) {
+  if (!Array.isArray(gives)) return aName(gives);
+  const names = [...gives].sort((a, b) => b[1] - a[1]).map(([t]) => ITEMS[t].name);
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}` : names[0];
 }
 
 /* ---- Levels ---- */
@@ -109,6 +120,11 @@ function makeLevel(o) {
   const far = [...dead].sort((a, b) => b.d - a.d || a.k - b.k);
   for (const type of o.hidden) { const t = take(type === 'gloomtotem' ? far : dead); items.push([t.r, t.c, type]); }
   const gloom = dead.filter(t => !used.has(t.r * o.cols + t.c)).slice(0, o.gloom || 0).map(t => [t.r, t.c]);
+  // Gloom Brutes roam anywhere; Gloom Lords stand guard well away from the start
+  gloom.forEach(([r, c]) => used.add(r * o.cols + c));
+  for (let n = 0; n < (o.brutes || 0); n++) { const t = take(dead); gloom.push([t.r, t.c, 'brute']); }
+  const guard = dead.filter(t => t.d >= (o.lordAt || o.live + 2.5));
+  for (let n = 0; n < (o.lords || 0); n++) { const t = take(guard.length > 4 ? guard : dead); gloom.push([t.r, t.c, 'lord']); }
   const home = Math.round(o.cy) * o.cols + Math.round(o.cx);
   return { ...base, land, items, gloom, home };
 }
